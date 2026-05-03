@@ -1,11 +1,12 @@
 import { http, createConfig } from 'wagmi';
 import { base, baseSepolia } from 'wagmi/chains';
-import { injected } from 'wagmi/connectors';
+import { injected, coinbaseWallet } from 'wagmi/connectors';
 
 export const config = createConfig({
   chains: [base, baseSepolia],
   connectors: [
     injected(),
+    coinbaseWallet({ appName: 'Warp Snake', preference: 'smartWalletOnly' }),
   ],
   transports: {
     [base.id]: http(),

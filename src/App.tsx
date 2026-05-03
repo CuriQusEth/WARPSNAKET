@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useGameEngine } from './hooks/useGameEngine';
 import { GameCanvas } from './components/GameCanvas';
 import { Controls } from './components/Controls';
-import { Play, RotateCcw } from 'lucide-react';
+import { Play, RotateCcw, Link2 } from 'lucide-react';
 import { WalletConnect } from './components/WalletConnect';
+import { useAccount, useSendTransaction } from 'wagmi';
+import { appendAttribution } from './lib/erc8021';
+import { toHex } from 'viem';
 
 export default function App() {
   const {
@@ -11,6 +14,31 @@ export default function App() {
     startGame, changeDirection, triggerManualWarp, setGameState,
     refs
   } = useGameEngine();
+
+  const { address, isConnected } = useAccount();
+  const { sendTransaction, isPending } = useSendTransaction();
+  const [txHash, setTxHash] = useState<string | null>(null);
+
+  const saveScoreOnchain = () => {
+    if (!address) return;
+    
+    // We encode the score as hex and append the builder code
+    const scoreDataPayload = toHex(`WarpSnakeScore:${score}`);
+    const attributedData = appendAttribution(scoreDataPayload);
+
+    sendTransaction(
+      {
+        to: address, // Send to self
+        value: 0n,
+        data: attributedData
+      },
+      {
+        onSuccess: (hash) => {
+           setTxHash(hash);
+        }
+      }
+    );
+  };
 
   return (
     <div 
@@ -96,15 +124,33 @@ export default function App() {
       {gameState === 'GAME_OVER' && (
         <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-slate-950/90 backdrop-blur-md">
           <h2 className="text-3xl font-black tracking-tighter text-fuchsia-500 mb-2 uppercase drop-shadow-[0_0_15px_rgba(217,70,239,0.5)]">System Failure</h2>
-          <div className="text-center mb-10 bg-slate-900/60 p-8 rounded-2xl border border-slate-800 backdrop-blur-sm">
+          <div className="text-center mb-6 bg-slate-900/60 p-8 rounded-2xl border border-slate-800 backdrop-blur-sm">
             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Final Score</p>
             <p className="text-5xl font-black text-white mb-2">{score.toString().padStart(6, '0')}</p>
             {score >= highScore && score > 0 && <p className="text-xs font-bold text-lime-400 uppercase tracking-widest animate-pulse mt-4">New Record Set</p>}
           </div>
+
+          {isConnected && (
+             <div className="mb-6 flex flex-col items-center">
+                <button 
+                  onClick={saveScoreOnchain}
+                  disabled={isPending || !!txHash}
+                  className="flex items-center gap-2 px-6 py-3 bg-blue-600/20 border border-blue-500 text-blue-400 font-bold text-xs rounded-xl transition-all hover:bg-blue-600/40 uppercase tracking-widest disabled:opacity-50"
+                >
+                  <Link2 size={16} /> 
+                  {isPending ? 'Signing...' : txHash ? 'Score Chained' : 'Save Score Onchain (ERC-8021)'}
+                </button>
+                {txHash && (
+                  <a href={`https://basescan.org/tx/${txHash}`} target="_blank" rel="noreferrer" className="mt-2 text-[10px] text-cyan-500 underline uppercase tracking-widest">
+                    View on Basescan
+                  </a>
+                )}
+             </div>
+          )}
           
           <div className="flex gap-4">
             <button 
-              onClick={startGame}
+              onClick={() => { setTxHash(null); startGame(); }}
               className="flex items-center gap-2 px-8 py-4 bg-fuchsia-600 border-b-4 border-fuchsia-800 text-white font-black text-sm rounded-xl shadow-[0_10px_30px_rgba(217,70,239,0.4)] transition-all active:translate-y-1 hover:brightness-110 uppercase tracking-widest"
             >
               <RotateCcw size={18} /> Reboot
