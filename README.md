@@ -1,20 +1,64 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Warp Snake
 
-# Run and deploy your AI Studio app
+Warp Snake is a modern cyberpunk reimagination of the classic Snake game featuring teleportation, vibrant neo-colors, and built-in Base Mainnet capabilities.
 
-This contains everything you need to run your app locally.
+## Features
 
-View your app in AI Studio: https://ai.studio/apps/fbca3fd2-91d0-4dd4-8a1e-ffcca95674e8
+- **Mobile First**: Built with responsive design and touch controls for seamless mobile play.
+- **Warp Portals**: Game twist that allows players to teleport across the game board.
+- **PWA Ready**: Manifest and Service Workers included so game can be installed.
+- **Onchain Score Board**: Integration with Base chain utilizing **ERC-8021 Transaction Attribution**. Save your scores directly on the ledger.
+- **Wallet Connection**: Connect via regular Ethereum wallet or seamlessly through Base's Smart Wallet.
+- **Say GM**: On-chain interaction to broadcast "GM" over Base Mainnet with embedded attribution!
 
-## Run Locally
+## ERC-8021 Implementation Structure
 
-**Prerequisites:**  Node.js
+The `Warp Snake` implementation provides a fully compliant and modular approach for **ERC-8021 Transaction Attribution**:
 
+```text
+src/lib/erc8021/
+├── constants.ts                      // Core markers and constants (e.g. Code registry, Delimiter, Base schema keys)
+├── types.ts                          // Interfaces for Multi-Attribution Schemas (0, 1, 2)
+├── utils.ts                          // Functions and builders logic for Suffixing Hex calldata
+├── validation.ts                     // Security validation and compliance checking
+├── parser.ts                         // Code for breaking down standard attributions manually
+├── registry.ts                       // Setup referencing Code Registry canonical references
+├── components/                       // Drop-in React components (Demo/TestRunner if used)
+└── hooks/
+    ├── useERC8021Transaction.ts      // React hook wrapper over standard EOA usage via typical Wagmi transactions
+    └── useERC8021BatchTransaction.ts // Advanced usage using ERC-5792 sendCall capabilities
+```
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+### How to Hook into Wagmi
+
+Simply import the custom hook available:
+```tsx
+import { useERC8021Transaction } from './lib/erc8021';
+import { toHex } from 'viem';
+
+// ...
+const { sendTransaction } = useERC8021Transaction();
+
+// Later in a callback
+const action = () => {
+    sendTransaction({
+        to: address, 
+        value: 0n,
+        // The ERC-8021 hook automatically applies `appendAttribution(data)` to data implicitly!
+        data: toHex('My onchain Data'),
+    });
+};
+```
+
+## Running the app locally
+
+### Prerequisites
+- Node.js environment
+- Vite installed globally or via npx (`npm run dev`)
+
+```bash
+npm install
+npm run dev
+```
+
+The game is ready. Connect a wallet and test building a transaction!

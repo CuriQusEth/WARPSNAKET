@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { useGameEngine } from './hooks/useGameEngine';
 import { GameCanvas } from './components/GameCanvas';
 import { Controls } from './components/Controls';
-import { Play, RotateCcw, Link2 } from 'lucide-react';
+import { Play, RotateCcw, Link2, MessageSquare } from 'lucide-react';
 import { WalletConnect } from './components/WalletConnect';
-import { useAccount, useSendTransaction } from 'wagmi';
-import { appendAttribution } from './lib/erc8021';
+import { useAccount } from 'wagmi';
 import { toHex } from 'viem';
+import { useERC8021Transaction } from './lib/erc8021';
 
 export default function App() {
   const {
@@ -16,7 +16,7 @@ export default function App() {
   } = useGameEngine();
 
   const { address, isConnected } = useAccount();
-  const { sendTransaction, isPending } = useSendTransaction();
+  const { sendTransaction, isPending } = useERC8021Transaction();
   const [txHash, setTxHash] = useState<string | null>(null);
 
   const saveScoreOnchain = () => {
@@ -24,13 +24,12 @@ export default function App() {
     
     // We encode the score as hex and append the builder code
     const scoreDataPayload = toHex(`WarpSnakeScore:${score}`);
-    const attributedData = appendAttribution(scoreDataPayload);
 
     sendTransaction(
       {
         to: address, // Send to self
         value: 0n,
-        data: attributedData
+        data: scoreDataPayload
       },
       {
         onSuccess: (hash) => {
@@ -39,6 +38,26 @@ export default function App() {
       }
     );
   };
+  
+  const sayGM = () => {
+    if (!address) return;
+
+    const gmPayload = toHex(`GM from WarpSnake!`);
+
+    sendTransaction(
+      {
+        to: address,
+        value: 0n,
+        data: gmPayload
+      },
+      {
+        onSuccess: (hash) => {
+           console.log("GM Sent! tx:", hash);
+        }
+      }
+    );
+  };
+
 
   return (
     <div 
@@ -131,15 +150,24 @@ export default function App() {
           </div>
 
           {isConnected && (
-             <div className="mb-6 flex flex-col items-center">
+             <div className="mb-6 flex flex-col items-center gap-3 w-full">
                 <button 
                   onClick={saveScoreOnchain}
                   disabled={isPending || !!txHash}
-                  className="flex items-center gap-2 px-6 py-3 bg-blue-600/20 border border-blue-500 text-blue-400 font-bold text-xs rounded-xl transition-all hover:bg-blue-600/40 uppercase tracking-widest disabled:opacity-50"
+                  className="flex w-full sm:w-auto items-center justify-center gap-2 px-6 py-3 bg-blue-600/20 border border-blue-500 text-blue-400 font-bold text-xs rounded-xl transition-all hover:bg-blue-600/40 uppercase tracking-widest disabled:opacity-50"
                 >
                   <Link2 size={16} /> 
                   {isPending ? 'Signing...' : txHash ? 'Score Chained' : 'Save Score Onchain (ERC-8021)'}
                 </button>
+                
+                <button 
+                  onClick={sayGM}
+                  className="flex w-full sm:w-auto items-center justify-center gap-2 px-6 py-3 bg-fuchsia-600/20 border border-fuchsia-500 text-fuchsia-400 font-bold text-xs rounded-xl transition-all hover:bg-fuchsia-600/40 uppercase tracking-widest"
+                >
+                  <MessageSquare size={16} /> 
+                  Say GM on Base
+                </button>
+
                 {txHash && (
                   <a href={`https://basescan.org/tx/${txHash}`} target="_blank" rel="noreferrer" className="mt-2 text-[10px] text-cyan-500 underline uppercase tracking-widest">
                     View on Basescan
