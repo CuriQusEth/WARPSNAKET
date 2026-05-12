@@ -1,6 +1,6 @@
-# Warp Snake
+# WarpSnaket Orchestrator
 
-Warp Snake is a modern cyberpunk reimagination of the classic Snake game featuring teleportation, vibrant neo-colors, and built-in Base Mainnet capabilities.
+WarpSnaket is a modern cyberpunk reimagination of the classic Snake game featuring teleportation, vibrant neo-colors, and built-in Base Mainnet capabilities. It serves as an on-chain playground and testbed for ERC-8004 Agent orchestration and ERC-8021 Transaction Attribution.
 
 ## Features
 
@@ -10,6 +10,15 @@ Warp Snake is a modern cyberpunk reimagination of the classic Snake game featuri
 - **Onchain Score Board**: Integration with Base chain utilizing **ERC-8021 Transaction Attribution**. Save your scores directly on the ledger.
 - **Wallet Connection**: Connect via regular Ethereum wallet or seamlessly through Base's Smart Wallet.
 - **Say GM**: On-chain interaction to broadcast "GM" over Base Mainnet with embedded attribution!
+- **ERC-8004 AI Agent Integration**: Intelligent agent capability configured via MCP (Model Context Protocol).
+
+## ERC-8004 Agent & MCP Config
+
+The application is configured to run as an intelligent agent endpoint under the `WarpSnaket Orchestrator` identity. The configuration files ensure Agent-to-Agent (A2A) and MCP compatibility:
+
+1. **Agent Metadata Card**: Available at `/.well-known/agent-card.json` mapping out the supported `eip155:8453` chain and tool capabilities like `task-automation` and `fren-farming`. 
+2. **MCP Endpoint**: The application exposes `/api/mcp` to process and respond to Model Context Protocol tasks.
+3. **Agent API**: The `/api/agent` route provides real-time status and identity checking.
 
 ## ERC-8021 Implementation Structure
 
