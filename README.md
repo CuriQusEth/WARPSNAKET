@@ -1,73 +1,83 @@
 # WarpSnaket Orchestrator
 
-WarpSnaket is a modern cyberpunk reimagination of the classic Snake game featuring teleportation, vibrant neo-colors, and built-in Base Mainnet capabilities. It serves as an on-chain playground and testbed for ERC-8004 Agent orchestration and ERC-8021 Transaction Attribution.
+**WarpSnaket Orchestrator** is an ERC-8004 compliant intelligent AI Agent and modern orchestrator deployed on the WarpSnaket platform. Designed as a Web3 integration testbed, it handles snake game management, multi-task automation, daily operations, and fren farming, while seamlessly connecting onto the Base Mainnet.
 
-## Features
+🔗 **Live Production App:** [https://warpsnaket.vercel.app/](https://warpsnaket.vercel.app/)
 
-- **Mobile First**: Built with responsive design and touch controls for seamless mobile play.
-- **Warp Portals**: Game twist that allows players to teleport across the game board.
-- **PWA Ready**: Manifest and Service Workers included so game can be installed.
-- **Onchain Score Board**: Integration with Base chain utilizing **ERC-8021 Transaction Attribution**. Save your scores directly on the ledger.
-- **Wallet Connection**: Connect via regular Ethereum wallet or seamlessly through Base's Smart Wallet.
-- **Say GM**: On-chain interaction to broadcast "GM" over Base Mainnet with embedded attribution!
-- **ERC-8004 AI Agent Integration**: Intelligent agent capability configured via MCP (Model Context Protocol).
+## 🚀 Project Overview
 
-## ERC-8004 Agent & MCP Config
+The WarpSnaket platform combines engaging UI with on-chain mechanics (ERC-8021 Transaction Attribution) and AI orchestration (ERC-8004). Key features include:
 
-The application is configured to run as an intelligent agent endpoint under the `WarpSnaket Orchestrator` identity. The configuration files ensure Agent-to-Agent (A2A) and MCP compatibility:
+- **AI Orchestration**: Autonomous agent capabilities for game logic, scheduling, and multi-game management via Model Context Protocol (MCP).
+- **Onchain Interaction**: Uses Base network for secure, verifiable transactions and leaderboard actions via Wagmi & viem.
+- **Mobile First & PWA Ready**: Fully responsive design with touch controls.
+- **Agent Identity**: Fully verifiable Agent-to-Agent (A2A) endpoints.
 
-1. **Agent Metadata Card**: Available at `/.well-known/agent-card.json` mapping out the supported `eip155:8453` chain and tool capabilities like `task-automation` and `fren-farming`. 
-2. **MCP Endpoint**: The application exposes `/api/mcp` to process and respond to Model Context Protocol tasks.
-3. **Agent API**: The `/api/agent` route provides real-time status and identity checking.
+## 🛠 Tech Stack
 
-## ERC-8021 Implementation Structure
+- **Framework**: Next.js 14+ (App Router) & React 18
+- **Web3 Integration**: Wagmi, Viem, Base Account/Smart Wallets 
+- **Agent Protocol**: Model Context Protocol (MCP) & ERC-8004 
+- **Attribution Protocol**: ERC-8021
+- **Styling**: Tailwind CSS & Lucide Icons
 
-The `Warp Snake` implementation provides a fully compliant and modular approach for **ERC-8021 Transaction Attribution**:
+## 🤖 Capabilities & Agent Details
 
-```text
-src/lib/erc8021/
-├── constants.ts                      // Core markers and constants (e.g. Code registry, Delimiter, Base schema keys)
-├── types.ts                          // Interfaces for Multi-Attribution Schemas (0, 1, 2)
-├── utils.ts                          // Functions and builders logic for Suffixing Hex calldata
-├── validation.ts                     // Security validation and compliance checking
-├── parser.ts                         // Code for breaking down standard attributions manually
-├── registry.ts                       // Setup referencing Code Registry canonical references
-├── components/                       // Drop-in React components (Demo/TestRunner if used)
-└── hooks/
-    ├── useERC8021Transaction.ts      // React hook wrapper over standard EOA usage via typical Wagmi transactions
-    └── useERC8021BatchTransaction.ts // Advanced usage using ERC-5792 sendCall capabilities
-```
+WarpSnaket Orchestrator is highly capable and operates completely autonomously. Supported capabilities include:
 
-### How to Hook into Wagmi
+- `snake-game-management`
+- `multi-game-management`
+- `task-automation`
+- `daily-operations`
+- `fren-farming`
+- `mcp-command-execution`
 
-Simply import the custom hook available:
-```tsx
-import { useERC8021Transaction } from './lib/erc8021';
-import { toHex } from 'viem';
+### Agent Registration (ERC-8004)
 
-// ...
-const { sendTransaction } = useERC8021Transaction();
+The agent identity is publicly declarable according to the ERC-8004 standard. You can view the agent metadata card mapping out the supported `eip155:8453` chain and tool capabilities at the root route:
+`GET https://warpsnaket.vercel.app/.well-known/agent-card.json`
 
-// Later in a callback
-const action = () => {
-    sendTransaction({
-        to: address, 
-        value: 0n,
-        // The ERC-8021 hook automatically applies `appendAttribution(data)` to data implicitly!
-        data: toHex('My onchain Data'),
-    });
-};
-```
+## 🔌 MCP Connection Guide
 
-## Running the app locally
+The system natively acts as an MCP server with an active endpoint to process standardized Model Context Protocol tools.
+
+**Endpoint URL**: `https://warpsnaket.vercel.app/api/mcp`
+**Method**: `POST`  
+**Description**: Active MCP server for WarpSnaket Orchestrator Agent.
+
+It supports standard MCP interaction methods (like `tools/list` and `tools/call`). Current active tools exposed include:
+- `get_race_status`
+- `start_race`
+- `get_leaderboard`
+- `optimize_speed`
+- `get_track_info`
+
+## 💻 How to Run Locally
 
 ### Prerequisites
-- Node.js environment
-- Vite installed globally or via npx (`npm run dev`)
+- Node.js (v18+)
+- Compatible package manager (npm, yarn, pnpm)
 
-```bash
-npm install
-npm run dev
-```
+### Setup
 
-The game is ready. Connect a wallet and test building a transaction!
+1. **Clone the repository:**
+   ```bash
+   git clone <repository-url>
+   cd warpsnaket
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Start the development server:**
+   ```bash
+   npm run dev
+   ```
+
+4. **Verify Endpoint Health:**
+   Once running on `localhost:3000`, test the active agent responses:
+   - Metadata validation: `http://localhost:3000/.well-known/agent-card.json`
+   - Active identity API: `http://localhost:3000/api/agent`
+   - MCP interactions: `http://localhost:3000/api/mcp`
