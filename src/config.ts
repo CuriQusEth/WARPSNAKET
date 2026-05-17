@@ -4,6 +4,7 @@ import { injected, coinbaseWallet } from 'wagmi/connectors';
 
 export const config = createConfig({
   chains: [base, baseSepolia],
+  multiInjectedProviderDiscovery: false,
   connectors: [
     injected(),
     coinbaseWallet({ appName: 'Warp Snake', preference: 'smartWalletOnly' }),
