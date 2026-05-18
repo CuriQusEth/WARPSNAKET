@@ -1,4 +1,4 @@
-// If using wagmi's sendCalls (experimental ERC-5792)
+// @ts-expect-error - wagmi experimental types may not be fully resolved
 import { useSendCalls } from 'wagmi/experimental';
 import { getBuilderCodeSuffix } from '../utils';
 

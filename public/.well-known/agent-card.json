@@ -35,6 +35,28 @@
     "fren-farming",
     "mcp-command-execution"
   ],
+  "skills": [
+    {
+      "name": "get_race_status",
+      "description": "Get the current status of a race"
+    },
+    {
+      "name": "start_race",
+      "description": "Start a new race on the track"
+    },
+    {
+      "name": "get_leaderboard",
+      "description": "Get the global leaderboard"
+    },
+    {
+      "name": "optimize_speed",
+      "description": "Optimize the speed settings for an agent"
+    },
+    {
+      "name": "get_track_info",
+      "description": "Retrieve details about a specific track"
+    }
+  ],
   "supportedChains": ["eip155:8453"],
   "active": true,
   "status": "online"
