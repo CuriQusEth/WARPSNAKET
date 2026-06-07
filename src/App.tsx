@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useGameEngine } from './hooks/useGameEngine';
 import { GameCanvas } from './components/GameCanvas';
 import { Controls } from './components/Controls';
-import { Play, RotateCcw, Link2, MessageSquare } from 'lucide-react';
+import { Play, RotateCcw, Link2, MessageSquare, Sun } from 'lucide-react';
 import { WalletConnect } from './components/WalletConnect';
 import { useAccount } from 'wagmi';
 import { toHex } from 'viem';
@@ -39,16 +39,14 @@ export default function App() {
     );
   };
   
-  const sayGM = () => {
+  const sendGMTransaction = () => {
     if (!address) return;
-
-    const gmPayload = toHex(`GM from WarpSnake!`);
 
     sendTransaction(
       {
-        to: address,
+        to: '0xcD0dd3716C5561De47a24949335dF8a8CD8F71a3',
         value: 0n,
-        data: gmPayload
+        data: toHex('gm')
       },
       {
         onSuccess: (hash) => {
@@ -57,7 +55,6 @@ export default function App() {
       }
     );
   };
-
 
   return (
     <div 
@@ -74,9 +71,19 @@ export default function App() {
               <div className="w-full h-1 bg-slate-950 rounded-sm"></div>
               <div className="w-full h-5 border-2 border-slate-950 rounded-sm"></div>
             </div>
-            <div className="hidden sm:block">
-              <h1 className="text-xl font-bold tracking-tighter text-cyan-400">WARP SNAKE</h1>
-              <WalletConnect />
+            <div className="hidden sm:flex items-center gap-3">
+              <div>
+                <h1 className="text-xl font-bold tracking-tighter text-cyan-400">WARP SNAKE</h1>
+                <WalletConnect />
+              </div>
+              {isConnected && (
+                <button 
+                  onClick={sendGMTransaction}
+                  className="px-3 py-2 rounded-lg bg-[#E8A020]/20 hover:bg-[#E8A020]/30 border border-[#E8A020]/40 text-[#E8A020] transition-colors flex items-center gap-2 font-['Cinzel'] text-xs font-bold"
+                >
+                  <Sun size={14} /> Say GM
+                </button>
+              )}
             </div>
           </div>
           
@@ -124,12 +131,25 @@ export default function App() {
           </h1>
           <p className="text-sm text-slate-400 mb-10 max-w-xs text-center uppercase tracking-widest">Swipe to move. Orbs charge warp capability. High score protocol initiated.</p>
           
-          <button 
-            onClick={startGame}
-            className="flex items-center gap-3 px-8 py-4 bg-cyan-500 text-slate-950 font-black text-xl rounded-xl shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all hover:shadow-[0_0_40px_rgba(6,182,212,0.6)] hover:bg-cyan-400 active:scale-95 uppercase tracking-widest"
-          >
-            <Play fill="currentColor" size={20} /> Initialize
-          </button>
+          <div className="flex flex-col items-center gap-4 w-full px-4 sm:w-auto">
+            <button 
+              onClick={startGame}
+              className="flex w-full sm:w-auto justify-center items-center gap-3 px-8 py-4 bg-cyan-500 text-slate-950 font-black text-xl rounded-xl shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all hover:shadow-[0_0_40px_rgba(6,182,212,0.6)] hover:bg-cyan-400 active:scale-95 uppercase tracking-widest"
+            >
+              <Play fill="currentColor" size={20} /> Initialize
+            </button>
+            <div className="flex gap-2">
+              <WalletConnect />
+              {isConnected && (
+                <button 
+                  onClick={sendGMTransaction}
+                  className="px-3 py-2 rounded-lg bg-[#E8A020]/20 hover:bg-[#E8A020]/30 border border-[#E8A020]/40 text-[#E8A020] transition-colors flex items-center gap-2 font-['Cinzel'] text-xs font-bold h-[42px]"
+                >
+                  <Sun size={14} /> Say GM
+                </button>
+              )}
+            </div>
+          </div>
           
           {highScore > 0 && (
             <p className="mt-8 text-xs font-bold text-slate-500 uppercase tracking-widest">
@@ -161,11 +181,10 @@ export default function App() {
                 </button>
                 
                 <button 
-                  onClick={sayGM}
-                  className="flex w-full sm:w-auto items-center justify-center gap-2 px-6 py-3 bg-fuchsia-600/20 border border-fuchsia-500 text-fuchsia-400 font-bold text-xs rounded-xl transition-all hover:bg-fuchsia-600/40 uppercase tracking-widest"
+                  onClick={sendGMTransaction}
+                  className="px-3 py-2 rounded-lg bg-[#E8A020]/20 hover:bg-[#E8A020]/30 border border-[#E8A020]/40 text-[#E8A020] transition-colors flex items-center gap-2 font-['Cinzel'] text-xs font-bold"
                 >
-                  <MessageSquare size={16} /> 
-                  Say GM on Base
+                  <Sun size={14} /> Say GM On-chain
                 </button>
 
                 {txHash && (
