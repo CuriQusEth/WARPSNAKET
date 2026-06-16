@@ -1,14 +1,10 @@
-// @ts-expect-error - wagmi experimental types may not be fully resolved
-import { useSendCalls } from 'wagmi/experimental';
+import { useSendCalls } from 'wagmi';
 import { getBuilderCodeSuffix } from '../utils';
 
 export function useERC8021BatchTransaction() {
-  // @ts-ignore - experimental wagmi api
-  const { sendCalls, ...rest } = useSendCalls ? useSendCalls() : { sendCalls: null };
+  const { sendCalls, ...rest } = useSendCalls();
 
   const sendAttributedBatch = (args: any, options?: any) => {
-      if (!sendCalls) throw new Error('useSendCalls not available. Ensure wagmi experimental is configured.');
-      
       const capabilities = args.capabilities || {};
       
       capabilities.dataSuffix = {
