@@ -4,7 +4,7 @@ import { GameCanvas } from './components/GameCanvas';
 import { Controls } from './components/Controls';
 import { Play, RotateCcw, Link2, MessageSquare, Sun } from 'lucide-react';
 import { WalletConnect } from './components/WalletConnect';
-import { useAccount } from 'wagmi';
+import { useAccount, useWaitForTransactionReceipt } from 'wagmi';
 import { toHex } from 'viem';
 import { useERC8021Transaction } from './lib/erc8021';
 
@@ -18,6 +18,17 @@ export default function App() {
   const { address, isConnected } = useAccount();
   const { sendTransaction, isPending } = useERC8021Transaction();
   const [txHash, setTxHash] = useState<string | null>(null);
+  const [gmTxHash, setGmTxHash] = useState<string | null>(null);
+
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+    hash: (txHash as `0x${string}`) || undefined,
+    pollingInterval: 250, // Tuned for 200ms canonical blocks
+  });
+
+  const { isLoading: isGmConfirming, isSuccess: isGmConfirmed } = useWaitForTransactionReceipt({
+    hash: (gmTxHash as `0x${string}`) || undefined,
+    pollingInterval: 250, // Tuned for 200ms canonical blocks
+  });
 
   const saveScoreOnchain = () => {
     if (!address) return;
@@ -50,7 +61,8 @@ export default function App() {
       },
       {
         onSuccess: (hash) => {
-           console.log("GM Sent! tx:", hash);
+          setGmTxHash(hash);
+          console.log("GM Sent! tx:", hash);
         }
       }
     );
@@ -79,9 +91,11 @@ export default function App() {
               {isConnected && (
                 <button 
                   onClick={sendGMTransaction}
-                  className="px-3 py-2 rounded-lg bg-[#E8A020]/20 hover:bg-[#E8A020]/30 border border-[#E8A020]/40 text-[#E8A020] transition-colors flex items-center gap-2 font-['Cinzel'] text-xs font-bold"
+                  disabled={isGmConfirming}
+                  className="px-3 py-2 rounded-lg bg-[#E8A020]/20 hover:bg-[#E8A020]/30 border border-[#E8A020]/40 text-[#E8A020] transition-colors flex items-center gap-2 font-['Cinzel'] text-xs font-bold disabled:opacity-50"
                 >
-                  <Sun size={14} /> Say GM
+                  <Sun size={14} className={isGmConfirming ? "animate-spin" : ""} />
+                  {isGmConfirming ? 'Confirming...' : isGmConfirmed ? 'GM Sent! ☀️' : 'Say GM'}
                 </button>
               )}
             </div>
@@ -173,31 +187,44 @@ export default function App() {
              <div className="mb-6 flex flex-col items-center gap-3 w-full">
                 <button 
                   onClick={saveScoreOnchain}
-                  disabled={isPending || !!txHash}
+                  disabled={isPending || isConfirming || isConfirmed}
                   className="flex w-full sm:w-auto items-center justify-center gap-2 px-6 py-3 bg-blue-600/20 border border-blue-500 text-blue-400 font-bold text-xs rounded-xl transition-all hover:bg-blue-600/40 uppercase tracking-widest disabled:opacity-50"
                 >
-                  <Link2 size={16} /> 
-                  {isPending ? 'Signing...' : txHash ? 'Score Chained' : 'Save Score Onchain (ERC-8021)'}
+                  <Link2 size={16} className={isConfirming ? "animate-pulse" : ""} /> 
+                  {isPending ? 'Signing...' : isConfirming ? 'Confirming on Base...' : isConfirmed ? 'Score Confirmed! ⚡' : 'Save Score Onchain (ERC-8021)'}
                 </button>
                 
                 <button 
                   onClick={sendGMTransaction}
-                  className="px-3 py-2 rounded-lg bg-[#E8A020]/20 hover:bg-[#E8A020]/30 border border-[#E8A020]/40 text-[#E8A020] transition-colors flex items-center gap-2 font-['Cinzel'] text-xs font-bold"
+                  disabled={isGmConfirming}
+                  className="px-3 py-2 rounded-lg bg-[#E8A020]/20 hover:bg-[#E8A020]/30 border border-[#E8A020]/40 text-[#E8A020] transition-colors flex items-center gap-2 font-['Cinzel'] text-xs font-bold disabled:opacity-50"
                 >
-                  <Sun size={14} /> Say GM On-chain
+                  <Sun size={14} className={isGmConfirming ? "animate-spin" : ""} />
+                  {isGmConfirming ? 'Confirming GM...' : isGmConfirmed ? 'GM Confirmed! ☀️' : 'Say GM On-chain'}
                 </button>
 
                 {txHash && (
-                  <a href={`https://basescan.org/tx/${txHash}`} target="_blank" rel="noreferrer" className="mt-2 text-[10px] text-cyan-500 underline uppercase tracking-widest">
-                    View on Basescan
-                  </a>
+                  <div className="flex flex-col items-center gap-1 mt-1">
+                    <a href={`https://basescan.org/tx/${txHash}`} target="_blank" rel="noreferrer" className="text-[10px] text-cyan-400 underline uppercase tracking-widest hover:text-cyan-300">
+                      View Score Tx on Basescan {isConfirmed ? '✓' : '...'}
+                    </a>
+                    {isConfirmed && <span className="text-[9px] text-emerald-400 tracking-wider font-mono">Confirmed on 200ms Base Block!</span>}
+                  </div>
+                )}
+                {gmTxHash && (
+                  <div className="flex flex-col items-center gap-1 mt-1">
+                    <a href={`https://basescan.org/tx/${gmTxHash}`} target="_blank" rel="noreferrer" className="text-[10px] text-[#E8A020] underline uppercase tracking-widest hover:text-amber-300">
+                      View GM Tx on Basescan {isGmConfirmed ? '✓' : '...'}
+                    </a>
+                    {isGmConfirmed && <span className="text-[9px] text-emerald-400 tracking-wider font-mono">Confirmed on 200ms Base Block!</span>}
+                  </div>
                 )}
              </div>
           )}
           
           <div className="flex gap-4">
             <button 
-              onClick={() => { setTxHash(null); startGame(); }}
+              onClick={() => { setTxHash(null); setGmTxHash(null); startGame(); }}
               className="flex items-center gap-2 px-8 py-4 bg-fuchsia-600 border-b-4 border-fuchsia-800 text-white font-black text-sm rounded-xl shadow-[0_10px_30px_rgba(217,70,239,0.4)] transition-all active:translate-y-1 hover:brightness-110 uppercase tracking-widest"
             >
               <RotateCcw size={18} /> Reboot
